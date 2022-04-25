@@ -101,7 +101,22 @@ async function saveMessage(messageText) {
 
 // Loads chat messages history and listens for upcoming ones.
 function loadMessages() {
-  // TODO 8: Load and listen for new messages.
+  // Grab the last 12 messages.
+  const recentMessagesQuery = query(collection(getFirestore(), 'messages'), orderBy('timestamp', 'desc'), limit(12));
+
+  // Start listening to the query.
+  onSnapshot(recentMessagesQuery, (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === 'removed') {
+        deleteMessage(change.doc.id);
+      }
+      else {
+        var message = change.doc.data();
+        displayMessage(change.doc.id, message.timestamp, message.name,
+                      message.text)
+      }
+    })
+  })
 }
 
 // Saves a new message containing an image in Firebase.
